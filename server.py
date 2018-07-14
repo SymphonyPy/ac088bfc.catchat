@@ -17,14 +17,27 @@ def pack(action, content):
     return string.encode()
 
 
-def login(database, id, password):
-    search_re = database.simple_search("users", "id={}".format(id))
+def recv(myconnection):
+    action = myconnection.recv(1).decode()
+    length = sum([32 ** (3 - _) * ord(i) for _, i in enumerate(myconnection.recv(4).decode())])
+    content = myconnection.recv(length).decode()
+    return action, content
+
+
+def signup(name, password):
+    id = 10000 + len(db.simple_search("users", "id>0"))
+    db.signup(id, name, password)
+    return id
+
+
+def login(id, password):
+    search_re = db.simple_search("users", "id={}".format(id))
     if search_re:
         re_id, _, re_password, _, _, _, _, _, _, _, = search_re[0]
     else:
         return "No such id!"
     if password == re_password:
-        return "successful"
+        return "1"
     else:
         return "Wrong password!"
 
@@ -40,27 +53,38 @@ def tellOthers(exceptNum, whatToSay):
 
 
 def subThreadIn(myconnection, connNumber):
-    while True
-        action = myconnection.recv(1).decode()
-        if ord(action) != 1:
-            return False
-        length = sum([32 ** (3 - _) * ord(i) for _, i in enumerate(myconnection.recv(4).decode())])
-        content = json.loads(myconnection.recv(length).decode())
-        status = login(db, content["id"], content["password"])
-        myconnection.send(pack(0, status))
-        print(status)
-        if status != "successful":
-            return False
+    while True:
+        action, content = recv(myconnection)
+        content = json.loads(content)
+        if ord(action) == 0:
+            id = signup(db, content["id"], content["password"])
+            js = {
+                "id": id
+            }
+            content = json.dumps(js)
+            myconnection.send(pack(0, content))
+            continue
+        if ord(action) == 1:
+            status = login(db, content["id"], content["password"])
+            js = {
+                "status": status
+            }
+            content = json.dumps(js)
+            myconnection.send(pack(1, content))
+            if status == "1":
+                break
+            else:
+                continue
     mydict[myconnection.fileno()] = content["id"]
     mylist.append(myconnection)
-    print('connection', connNumber, ' has nickname :', id)
-    tellOthers(connNumber, '【系统提示：' + mydict[connNumber] + ' 进入聊天室】')
+    print('connection', connNumber, ' has id :', id)
+    # tellOthers(connNumber, '【系统提示：' + mydict[connNumber] + ' 进入聊天室】')
     while True:
         try:
-            recvedMsg = myconnection.recv(1024).decode()
-            if recvedMsg:
-                print(mydict[connNumber], ':', recvedMsg)
-                tellOthers(connNumber, mydict[connNumber] + ' :' + recvedMsg)
+            action, content = recv(myconnection)
+            if content:
+                print(mydict[connNumber], ':', content)
+                # tellOthers(connNumber, mydict[connNumber] + ' :' + content)
 
         except (OSError, ConnectionResetError):
             try:

@@ -1,5 +1,6 @@
 import sqlite3
 import logging
+import time
 
 
 def execute(func):
@@ -34,15 +35,11 @@ class Database:
         return operation
 
     @execute
-    def add_new_user(self, data):
-        table_name = "users"
+    def signup(self, id, name, password):
         headers = "id, name, password, time_joined"
         quotation = lambda x: "\"" + x + "\""
-        values = str(data["id"]) + ", "
-        for i in ["name", "password"]:
-            values += quotation(data[i]) + ", "
-        values += str(data["time_joined"])
-        operation = "INSERT INTO {} ({}) VALUES ({})".format(table_name, headers, values)
+        values = str(id) + "," + quotation(name) + "," + quotation(password) + "," + str(time.time())
+        operation = "INSERT INTO users ({}) VALUES ({})".format(headers, values)
         return operation
 
     # @execute
