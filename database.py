@@ -42,6 +42,12 @@ class Database:
         operation = "INSERT INTO users ({}) VALUES ({})".format(headers, values)
         return operation
 
+    def addfriends(self, id1, id2):
+        headers = "id1, id2"
+        values = str(id1) + ", " + str(id2)
+        operation = "INSERT INTO friends ({}) VALUES ({})".format(headers, values)
+        return operation
+
     # @execute
     # def follow(self, following_id, follower_id):
     #     conn = sqlite3.connect(self.name)

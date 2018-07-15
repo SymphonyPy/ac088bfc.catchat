@@ -7,6 +7,7 @@ db = Database("Chatter.db")
 
 mydict = dict()
 mylist = list()
+req_friend = list()
 
 
 def pack(action, content):
@@ -21,7 +22,16 @@ def recv(myconnection):
     action = myconnection.recv(1).decode()
     length = sum([32 ** (3 - _) * ord(i) for _, i in enumerate(myconnection.recv(4).decode())])
     content = myconnection.recv(length).decode()
-    return action, content
+    return ord(action), content
+
+
+def get_sock(id):
+    for i in mydict.keys():
+        if mydict[i] == id:
+            for j in mylist:
+                if j.fileno() == i:
+                    return j
+    return False
 
 
 def signup(name, password):
@@ -42,12 +52,48 @@ def login(id, password):
         return "Wrong password!"
 
 
+def friend_list(id):
+    re = db.simple_search("friends", "id1={}".format(id))
+    list = []
+    for i in re:
+        name = db.simple_search("users", "id={}".format(i[1]))
+        temp = {
+            "id": i[1],
+            "online": i[1] in mydict.values(),
+            "name": name
+        }
+        list.append(temp)
+    return {
+        "list": list
+    }
+
+
+def addfriends(id1, id2):
+    if {id1, id2} not in req_friend:
+        req_friend.append({id1, id2})
+        return False
+    else:
+        db.addfriends(id1, id2)
+        db.addfriends(id2, id1)
+        return False
+
+
+def sendmsg(frm, to, msg):
+    js = {
+        "from": frm,
+        "type": 1,
+        "content": msg
+    }
+    content = json.dumps(js)
+    get_sock(to).send(pack(83, content))
+
+
 # 把whatToSay传给除了exceptNum的所有人
 def tellOthers(exceptNum, whatToSay):
     for c in mylist:
         if c.fileno() != exceptNum:
             try:
-                c.send(whatToSay.encode())
+                c.send(whatToSay)
             except:
                 pass
 
@@ -56,7 +102,7 @@ def subThreadIn(myconnection, connNumber):
     while True:
         action, content = recv(myconnection)
         content = json.loads(content)
-        if ord(action) == 0:
+        if action == 0:
             id = signup(db, content["id"], content["password"])
             js = {
                 "id": id
@@ -64,7 +110,7 @@ def subThreadIn(myconnection, connNumber):
             content = json.dumps(js)
             myconnection.send(pack(0, content))
             continue
-        if ord(action) == 1:
+        if action == 1:
             status = login(db, content["id"], content["password"])
             js = {
                 "status": status
@@ -77,15 +123,24 @@ def subThreadIn(myconnection, connNumber):
                 continue
     mydict[myconnection.fileno()] = content["id"]
     mylist.append(myconnection)
-    print('connection', connNumber, ' has id :', id)
-    # tellOthers(connNumber, '【系统提示：' + mydict[connNumber] + ' 进入聊天室】')
+    myid = content["id"]
     while True:
         try:
             action, content = recv(myconnection)
+            if action == 40:
+                js = friend_list(myid)
+                content = json.dumps(js)
+                myconnection.send(pack(80, content))
+            if action == 41:
+                js = json.loads(content)
+                addfriends(myid, js["to"])
+            if action == 42:
+                js = json.loads(content)
+                sendmsg(myid, js["to"], js["content"])
+            if action == 43:  # 删除好友
+                pass
             if content:
                 print(mydict[connNumber], ':', content)
-                # tellOthers(connNumber, mydict[connNumber] + ' :' + content)
-
         except (OSError, ConnectionResetError):
             try:
                 mylist.remove(myconnection)
