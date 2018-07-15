@@ -115,28 +115,26 @@ def tellOthers(exceptNum, whatToSay):
 
 
 def subThreadIn(myconnection, connNumber):
-    while True:
-        action, content = recv(myconnection)
-        content = json.loads(content)
-        if action == 0:
-            id = signup(content["name"], content["password"])
-            js = {
-                "id": id
-            }
-            content_ = json.dumps(js)
-            myconnection.send(pack(0, content_))
-            continue
-        if action == 1:
-            status = login(content["id"], content["password"])
-            js = {
-                "status": status
-            }
-            content_ = json.dumps(js)
-            myconnection.send(pack(1, content_))
-            if status == "1":
-                break
-            else:
-                continue
+    action, content = recv(myconnection)
+    content = json.loads(content)
+    if action == 0:
+        id = signup(content["name"], content["password"])
+        js = {
+            "id": id
+        }
+        content_ = json.dumps(js)
+        myconnection.send(pack(0, content_))
+    elif action == 1:
+        status = login(content["id"], content["password"])
+        js = {
+            "status": status
+        }
+        content_ = json.dumps(js)
+        myconnection.send(pack(1, content_))
+        if status == "1":
+            pass
+        else:
+            return
     mydict[myconnection.fileno()] = content["id"]
     mylist.append(myconnection)
     myid = content["id"]
