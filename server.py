@@ -184,8 +184,21 @@ def subThreadIn(myconnection, connNumber):
             myid = content["id"]
         else:
             return
+    for key in mydict.keys():
+        if mydict[key] == myid:
+            del mydict[key]
+            break
     mydict[connNumber] = myid
     mylist.append(myconnection)
+    js = friend_list(myid)
+    for i in js["list"]:
+        sid = i["id"]
+        print(sid)
+        if sid not in mydict.values():
+            continue
+        jss = friend_list(sid)
+        content = json.dumps(jss)
+        get_sock(sid).send(pack(80, content))
     while True:
         try:
             action, content = recv(myconnection)
@@ -193,14 +206,6 @@ def subThreadIn(myconnection, connNumber):
                 js = friend_list(myid)
                 content = json.dumps(js)
                 myconnection.send(pack(80, content))
-                for i in js["list"]:
-                    sid = i["id"]
-                    print(sid)
-                    if sid not in mydict.values():
-                        continue
-                    jss = friend_list(sid)
-                    content = json.dumps(jss)
-                    get_sock(sid).send(pack(80, content))
             if action == 41:
                 js = json.loads(content)
                 addfriends(myid, js["to"])
