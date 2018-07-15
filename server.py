@@ -33,8 +33,8 @@ def close_socks(signal, frame):
     for socc in mylist:
         print("sock {} closing".format(socc.fileno()))
         socc.close()
-    exit()
     sock.close()
+    exit()
 
 
 def get_sock(id):
@@ -90,14 +90,18 @@ def addfriends(id1, id2):
         return False
 
 
-def sendmsg(frm, to, msg):
+def sendmsg(action, frm, to, msg):
     js = {
         "from": frm,
         "type": 1,
         "content": msg
     }
     content = json.dumps(js)
-    get_sock(to).send(pack(83, content))
+    get_sock(to).send(pack(action, content))
+
+
+def update_personal_info(id, data):
+    db.update(id, data)
 
 
 # 把whatToSay传给除了exceptNum的所有人
@@ -148,9 +152,18 @@ def subThreadIn(myconnection, connNumber):
                 addfriends(myid, js["to"])
             if action == 42:
                 js = json.loads(content)
-                sendmsg(myid, js["to"], js["content"])
+                sendmsg(82, myid, js["to"], js["content"])
             if action == 43:  # 删除好友
                 pass
+            if action == 44:
+                js = json.loads(content)
+                sendmsg(84, myid, js["to"], js["content"])
+            if action == 45:
+                js = json.loads(content)
+                sendmsg(85, myid, js["to"], js["content"])
+            if action == 46:
+                js = json.loads(content)
+                update_personal_info(myid, js)
             if content:
                 print(mydict[connNumber], ':', content)
         except (OSError, ConnectionResetError):

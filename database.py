@@ -39,13 +39,29 @@ class Database:
         headers = "id, name, password, time_joined"
         quotation = lambda x: "\"" + x + "\""
         values = str(id) + "," + quotation(name) + "," + quotation(password) + "," + str(time.time())
-        operation = "INSERT INTO users ({}) VALUES ({})".format(headers, values)
+        operation = "INSERT INTO users ({}) VALUES ({});".format(headers, values)
         return operation
 
+    @execute
     def addfriends(self, id1, id2):
         headers = "id1, id2"
         values = str(id1) + ", " + str(id2)
-        operation = "INSERT INTO friends ({}) VALUES ({})".format(headers, values)
+        operation = "INSERT INTO friends ({}) VALUES ({});".format(headers, values)
+        return operation
+
+    @execute
+    def update(self, id, data):
+        def deal(value):
+            if type(value) != str:
+                return value
+            else:
+                return "\"{}\"".format(value)
+
+        string = ""
+        for key in data.keys():
+            temp = "{}={}, ".format(key, deal(data[key]))
+            string += temp
+        operation = "UPDATE users SET {} where id={};".format(string[:-2], id)
         return operation
 
     # @execute
