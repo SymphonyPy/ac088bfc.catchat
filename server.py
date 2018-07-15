@@ -184,7 +184,7 @@ def subThreadIn(myconnection, connNumber):
             myid = content["id"]
         else:
             return
-    mydict[myconnection.fileno()] = myid
+    mydict[connNumber] = myid
     mylist.append(myconnection)
     while True:
         try:
@@ -194,12 +194,13 @@ def subThreadIn(myconnection, connNumber):
                 content = json.dumps(js)
                 myconnection.send(pack(80, content))
                 for i in js["list"]:
-                    id = i["id"]
-                    if id not in mydict.values():
+                    sid = i["id"]
+                    print(sid)
+                    if sid not in mydict.values():
                         continue
-                    jss = friend_list(id)
+                    jss = friend_list(sid)
                     content = json.dumps(jss)
-                    myconnection.send(pack(80, content))
+                    get_sock(sid).send(pack(80, content))
             if action == 41:
                 js = json.loads(content)
                 addfriends(myid, js["to"])
@@ -247,12 +248,12 @@ def subThreadIn(myconnection, connNumber):
             mydict[connNumber] = None
             js = friend_list(myid)
             for i in js["list"]:
-                id = i["id"]
-                if id not in mydict.values():
+                sid = i["id"]
+                if sid not in mydict.values():
                     continue
-                jss = friend_list(id)
+                jss = friend_list(sid)
                 content = json.dumps(jss)
-                myconnection.send(pack(80, content))
+                get_sock(sid).send(pack(80, content))
             # tellOthers(connNumber, '【系统提示：' + mydict[connNumber] + ' 离开聊天室】')
             myconnection.close()
             return
