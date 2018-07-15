@@ -9,6 +9,7 @@ db = Database("Chatter.db")
 mydict = dict()
 mylist = list()
 req_friend = list()
+sock = None
 
 
 def pack(action, content):
@@ -29,10 +30,11 @@ def recv(myconnection):
 
 
 def close_socks(signal, frame):
-    for sock in mylist:
-        print("sock {} closing".format(sock.fileno()))
-        sock.close()
+    for socc in mylist:
+        print("sock {} closing".format(socc.fileno()))
+        socc.close()
     exit()
+    sock.close()
 
 
 def get_sock(id):
