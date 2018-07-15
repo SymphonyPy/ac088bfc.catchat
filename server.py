@@ -124,6 +124,7 @@ def subThreadIn(myconnection, connNumber):
         }
         content_ = json.dumps(js)
         myconnection.send(pack(0, content_))
+        myid = id
     elif action == 1:
         status = login(content["id"], content["password"])
         js = {
@@ -132,12 +133,11 @@ def subThreadIn(myconnection, connNumber):
         content_ = json.dumps(js)
         myconnection.send(pack(1, content_))
         if status == "1":
-            pass
+            myid = content["id"]
         else:
             return
-    mydict[myconnection.fileno()] = content["id"]
+    mydict[myconnection.fileno()] = myid
     mylist.append(myconnection)
-    myid = content["id"]
     while True:
         try:
             action, content = recv(myconnection)
