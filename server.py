@@ -193,6 +193,8 @@ def subThreadIn(myconnection, connNumber):
                 myconnection.send(pack(80, content))
                 for i in js["list"]:
                     id = i["id"]
+                    if id not in mydict.values:
+                        continue
                     jss = friend_list(id)
                     content = json.dumps(jss)
                     myconnection.send(pack(80, content))
