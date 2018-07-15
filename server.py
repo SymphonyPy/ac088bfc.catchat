@@ -66,7 +66,7 @@ def friend_list(id):
     re = db.simple_search("friends", "id1={}".format(id))
     list = []
     for i in re:
-        name = db.simple_search("users", "id={}".format(i[1]))
+        name = db.simple_search("users", "id={}".format(i[1]))[0][1]
         temp = {
             "id": i[1],
             "online": i[1] in mydict.values(),
