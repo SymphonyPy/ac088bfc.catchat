@@ -242,6 +242,15 @@ def subThreadIn(myconnection, connNumber):
             except:
                 pass
             print(mydict[connNumber], 'exit, ', len(mylist), ' person left')
+            mydict[connNumber] = None
+            js = friend_list(myid)
+            for i in js["list"]:
+                id = i["id"]
+                if id not in mydict.values:
+                    continue
+                jss = friend_list(id)
+                content = json.dumps(jss)
+                myconnection.send(pack(80, content))
             # tellOthers(connNumber, '【系统提示：' + mydict[connNumber] + ' 离开聊天室】')
             myconnection.close()
             return
