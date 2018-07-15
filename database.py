@@ -64,6 +64,21 @@ class Database:
         operation = "UPDATE users SET {} where id={};".format(string[:-2], id)
         return operation
 
+    @execute
+    def creategroup(self, id, name):
+        headers = "id, name, created_joined"
+        quotation = lambda x: "\"" + x + "\""
+        values = str(id) + "," + quotation(name) + "," + str(time.time())
+        operation = "INSERT INTO rooms ({}) VALUES ({});".format(headers, values)
+        return operation
+
+    @execute
+    def addmember(self, id, group_id):
+        headers = "room_id, user_id, joined_time"
+        values = str(group_id) + "," + str(id) + "," + str(time.time())
+        operation = "INSERT INTO members ({}) VALUES ({});".format(headers, values)
+        return operation
+
     # @execute
     # def follow(self, following_id, follower_id):
     #     conn = sqlite3.connect(self.name)

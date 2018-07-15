@@ -44,6 +44,12 @@ def get_sock(id):
     return False
 
 
+def get_members(group_id):
+    re = db.simple_search("members", "room_id={}".format(group_id))
+    ids = [i[1] for i in re]
+    return ids
+
+
 def signup(name, password):
     id = 10000 + len(db.simple_search("users", "id>0"))
     db.signup(id, name, password)
@@ -100,8 +106,48 @@ def sendmsg(action, frm, to, type, msg, filename=None):
     get_sock(to).send(pack(action, content))
 
 
+def sendgroupmsg(action, frm, to, type, msg, filename=None):
+    ids = get_members(to)
+    js = {
+        "from": frm,
+        "groupid": to,
+        "type": type,
+        "content": msg,
+        "filename": filename
+    }
+    content = json.dumps(js)
+    for i in ids:
+        so = get_sock(i)
+        so.send(pack(action, content))
+
+
 def update_personal_info(id, data):
     db.update(id, data)
+
+
+def creategroup(name):
+    id = 100 + len(db.simple_search("rooms", "id>0"))
+    db.signup(id, name)
+    return id
+
+
+def joingroup(id, group_id):
+    db.addmember(id, group_id)
+
+
+def getmembers(id):
+    ids = get_members(id)
+    for i in ids:
+        name = db.simple_search("users", "id={}".format(i[1]))[0][1]
+        temp = {
+            "id": i[1],
+            "online": i[1] in mydict.values(),
+            "name": name
+        }
+        list.append(temp)
+    return {
+        "list": list
+    }
 
 
 # 把whatToSay传给除了exceptNum的所有人
@@ -160,6 +206,27 @@ def subThreadIn(myconnection, connNumber):
             if action == 44:
                 js = json.loads(content)
                 update_personal_info(myid, js)
+            if action == 45:  # 发送群消息
+                js = json.loads(content)
+                if "filename" in js.keys():
+                    filename = js["filename"]
+                else:
+                    filename = None
+                sendgroupmsg(85, myid, js["to"], js["type"], js["content"], filename=filename)
+            if action == 46:  # 创建群聊
+                js = json.loads(content)
+                groupid = creategroup(js["name"])
+                joingroup(myid, groupid)
+                js = {
+                    "groupid": groupid
+                }
+                content = json.dumps(js)
+                myconnection.send(pack(86, content))
+            if action == 47:  # 获取群成员
+                js = json.loads(content)
+                jss = getmembers(js["groupid"])
+                content = json.dumps(jss)
+                myconnection.send(pack(86, content))
             if content:
                 print(mydict[connNumber], ':', content)
         except (OSError, ConnectionResetError):
@@ -168,7 +235,7 @@ def subThreadIn(myconnection, connNumber):
             except:
                 pass
             print(mydict[connNumber], 'exit, ', len(mylist), ' person left')
-            tellOthers(connNumber, '【系统提示：' + mydict[connNumber] + ' 离开聊天室】')
+            # tellOthers(connNumber, '【系统提示：' + mydict[connNumber] + ' 离开聊天室】')
             myconnection.close()
             return
 
