@@ -1,4 +1,5 @@
 import json
+import signal
 import socket
 import threading
 from database import Database
@@ -23,6 +24,13 @@ def recv(myconnection):
     length = sum([32 ** (3 - _) * ord(i) for _, i in enumerate(myconnection.recv(4).decode())])
     content = myconnection.recv(length).decode()
     return ord(action), content
+
+
+def close_socks(signal, frame):
+    for sock in mylist:
+        print("sock {} closing".format(sock.fileno()))
+        sock.close()
+    exit()
 
 
 def get_sock(id):
@@ -103,24 +111,25 @@ def subThreadIn(myconnection, connNumber):
         action, content = recv(myconnection)
         content = json.loads(content)
         if action == 0:
-            id = signup(content["id"], content["password"])
+            id = signup(content["name"], content["password"])
             js = {
                 "id": id
             }
-            content = json.dumps(js)
-            myconnection.send(pack(0, content))
+            content_ = json.dumps(js)
+            myconnection.send(pack(0, content_))
             continue
         if action == 1:
             status = login(content["id"], content["password"])
             js = {
                 "status": status
             }
-            content = json.dumps(js)
-            myconnection.send(pack(1, content))
+            content_ = json.dumps(js)
+            myconnection.send(pack(1, content_))
             if status == "1":
                 break
             else:
                 continue
+    print(mydict, myconnection.fileno())
     mydict[myconnection.fileno()] = content["id"]
     mylist.append(myconnection)
     myid = content["id"]
@@ -151,6 +160,8 @@ def subThreadIn(myconnection, connNumber):
             myconnection.close()
             return
 
+
+signal.signal(signal.SIGINT, close_socks)
 
 if __name__ == "__main__":
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
