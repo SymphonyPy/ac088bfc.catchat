@@ -88,12 +88,13 @@ def addfriends(id1, id2):
         return False
 
 
-def sendmsg(action, frm, to, type, msg):
+def sendmsg(action, frm, to, type, msg, filename=None):
     # 1文本2图片3文件
     js = {
         "from": frm,
         "type": type,
-        "content": msg
+        "content": msg,
+        "filename": filename
     }
     content = json.dumps(js)
     get_sock(to).send(pack(action, content))
@@ -151,7 +152,11 @@ def subThreadIn(myconnection, connNumber):
                 addfriends(myid, js["to"])
             if action == 42:
                 js = json.loads(content)
-                sendmsg(82, myid, js["to"], js["type"], js["content"])
+                if "filename" in js.keys():
+                    filename = js["filename"]
+                else:
+                    filename = None
+                sendmsg(82, myid, js["to"], js["type"], js["content"], filename=filename)
             if action == 43:  # 删除好友
                 pass
             if action == 44:
