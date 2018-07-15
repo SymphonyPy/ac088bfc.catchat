@@ -21,7 +21,9 @@ def pack(action, content):
 
 
 def recv(myconnection):
-    action = myconnection.recv(1).decode()
+    action = b""
+    while not len(action):
+        action = myconnection.recv(1).decode()
     length = sum([32 ** (3 - _) * ord(i) for _, i in enumerate(myconnection.recv(4).decode())])
     content = myconnection.recv(length).decode()
     return ord(action), content
