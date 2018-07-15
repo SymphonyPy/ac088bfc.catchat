@@ -21,9 +21,7 @@ def pack(action, content):
 
 
 def recv(myconnection):
-    action = b""
-    while not len(action):
-        action = myconnection.recv(1).decode()
+    action = myconnection.recv(1).decode()
     length = sum([32 ** (3 - _) * ord(i) for _, i in enumerate(myconnection.recv(4).decode())])
     content = myconnection.recv(length).decode()
     return ord(action), content
@@ -90,10 +88,11 @@ def addfriends(id1, id2):
         return False
 
 
-def sendmsg(action, frm, to, msg):
+def sendmsg(action, frm, to, type, msg):
+    # 1文本2图片3文件
     js = {
         "from": frm,
-        "type": 1,
+        "type": type,
         "content": msg
     }
     content = json.dumps(js)
@@ -152,16 +151,10 @@ def subThreadIn(myconnection, connNumber):
                 addfriends(myid, js["to"])
             if action == 42:
                 js = json.loads(content)
-                sendmsg(82, myid, js["to"], js["content"])
+                sendmsg(82, myid, js["to"], js["type"], js["content"])
             if action == 43:  # 删除好友
                 pass
             if action == 44:
-                js = json.loads(content)
-                sendmsg(84, myid, js["to"], js["content"])
-            if action == 45:
-                js = json.loads(content)
-                sendmsg(85, myid, js["to"], js["content"])
-            if action == 46:
                 js = json.loads(content)
                 update_personal_info(myid, js)
             if content:
