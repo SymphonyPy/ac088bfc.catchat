@@ -191,6 +191,11 @@ def subThreadIn(myconnection, connNumber):
                 js = friend_list(myid)
                 content = json.dumps(js)
                 myconnection.send(pack(80, content))
+                for i in js["list"]:
+                    id = i["id"]
+                    jss = friend_list(id)
+                    content = json.dumps(jss)
+                    myconnection.send(pack(80, content))
             if action == 41:
                 js = json.loads(content)
                 addfriends(myid, js["to"])
