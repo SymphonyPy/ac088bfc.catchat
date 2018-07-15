@@ -103,7 +103,7 @@ def subThreadIn(myconnection, connNumber):
         action, content = recv(myconnection)
         content = json.loads(content)
         if action == 0:
-            id = signup(db, content["id"], content["password"])
+            id = signup(content["id"], content["password"])
             js = {
                 "id": id
             }
@@ -111,7 +111,7 @@ def subThreadIn(myconnection, connNumber):
             myconnection.send(pack(0, content))
             continue
         if action == 1:
-            status = login(db, content["id"], content["password"])
+            status = login(content["id"], content["password"])
             js = {
                 "status": status
             }
