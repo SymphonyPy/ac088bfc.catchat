@@ -24,8 +24,11 @@ def recv(myconnection):
     action = b""
     while not len(action):
         action = myconnection.recv(1).decode()
-    length = sum([32 ** (3 - _) * ord(i) for _, i in enumerate(myconnection.recv(4).decode())])
-    content = myconnection.recv(length).decode()
+    # if ord(action) != 105:
+    #     length = sum([32 ** (3 - _) * ord(i) for _, i in enumerate(myconnection.recv(4).decode())])
+    #     content = myconnection.recv(length).decode()
+    # else:
+    content = "{" + "".join(myconnection.recv(1024).decode().split("{")[1:])
     return ord(action), content
 
 
@@ -210,6 +213,7 @@ def subThreadIn(myconnection, connNumber):
                 js = json.loads(content)
                 addfriends(myid, js["to"])
             if action == 42:
+                print(content)
                 js = json.loads(content)
                 if "filename" in js.keys():
                     filename = js["filename"]
