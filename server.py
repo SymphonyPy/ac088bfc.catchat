@@ -153,6 +153,7 @@ def joingroup(id, group_id):
 
 def getmembers(id):
     ids = get_members(id)
+    list=[]
     for i in ids:
         name = db.simple_search("users", "id={}".format(i[1]))[0][1]
         if name:
