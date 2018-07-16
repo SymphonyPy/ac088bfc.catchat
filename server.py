@@ -84,6 +84,15 @@ def friend_list(id):
             "name": name
         }
         list.append(temp)
+    re = db.simple_search("members", "user_id={}".format(id))
+    for i in re:
+        name = db.simple_search("rooms", "id={}".format(i[1]))[0][1]
+        temp = {
+            "id": i[0],
+            "online": False,
+            "name": name
+        }
+        list.append(temp)
     return {
         "list": list
     }
