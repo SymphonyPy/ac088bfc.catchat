@@ -66,7 +66,7 @@ class Database:
 
     @execute
     def creategroup(self, id, name):
-        headers = "id, name, created_joined"
+        headers = "id, name, created_time"
         quotation = lambda x: "\"" + x + "\""
         values = str(id) + "," + quotation(name) + "," + str(time.time())
         operation = "INSERT INTO rooms ({}) VALUES ({});".format(headers, values)
