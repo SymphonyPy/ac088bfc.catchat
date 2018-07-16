@@ -141,7 +141,7 @@ def update_personal_info(id, data):
 
 def creategroup(name):
     id = 100 + len(db.simple_search("rooms", "id>0"))
-    db.signup(id, name)
+    db.creategroup(id, name)
     return id
 
 
