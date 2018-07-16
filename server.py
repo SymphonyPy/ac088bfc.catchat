@@ -255,6 +255,9 @@ def subThreadIn(myconnection, connNumber):
                 jss = getmembers(js["groupid"])
                 content = json.dumps(jss)
                 myconnection.send(pack(86, content))
+            if action == 48:
+                js = json.loads(content)
+                joingroup(myid, js["groupid"])
             if content:
                 print(mydict[connNumber], ':', content)
         except (OSError, ConnectionResetError):
