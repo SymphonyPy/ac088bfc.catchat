@@ -155,7 +155,7 @@ def getmembers(id):
     ids = get_members(id)
     list=[]
     for i in ids:
-        name = db.simple_search("users", "id={}".format(i[1]))
+        name = db.simple_search("users", "id={}".format(i))
         if name:
             name = name[0][1]
         else:
