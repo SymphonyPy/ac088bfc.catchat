@@ -155,6 +155,10 @@ def getmembers(id):
     ids = get_members(id)
     for i in ids:
         name = db.simple_search("users", "id={}".format(i[1]))[0][1]
+        if name:
+            name = name[0][1]
+        else:
+            continue
         temp = {
             "id": i[1],
             "online": i[1] in mydict.values(),
