@@ -28,7 +28,7 @@ def recv(myconnection):
     #     length = sum([32 ** (3 - _) * ord(i) for _, i in enumerate(myconnection.recv(4).decode())])
     #     content = myconnection.recv(length).decode()
     # else:
-    content = "{" + "".join(myconnection.recv(1024).decode().split("{")[1:])
+    content = "{" + "".join(myconnection.recv(8192).decode().split("{")[1:])
     return ord(action), content
 
 
